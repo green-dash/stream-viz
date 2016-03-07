@@ -1,13 +1,13 @@
 var socket = io.connect();
 
-var rawData = [];
-rawData[0] = [];
-rawData[1] = [];
-rawData[2] = [];
-rawData[3] = [];
-// rawData[4] = [];
+var n = 8;
 
-var m = 200;
+var rawData = [];
+for (i=0; i < n; i++) {
+    rawData[i] = [];
+}
+
+var m = 100;
 
 socket.on('FIC_0805_OUT_x_H2O', function(message) {
     var layerIndex = 0;
@@ -32,9 +32,23 @@ socket.on('FIC_6913_OUT_Train-4_RM', function(message) {
     rawData[layerIndex].push(message.value);
     if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
 });
-
 socket.on('AIC_9680_OUT_Train-1_ED', function(message) {
     var layerIndex = 4;
+    rawData[layerIndex].push(message.value);
+    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+});
+socket.on('FIC_0899_OUT_x_H2O', function(message) {
+    var layerIndex = 5;
+    rawData[layerIndex].push(message.value);
+    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+});
+socket.on('FIC_6910_OUT_Train-4_RM', function(message) {
+    var layerIndex = 6;
+    rawData[layerIndex].push(message.value);
+    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+});
+socket.on('FIC_6913_OUT_Train-4_RM', function(message) {
+    var layerIndex = 7;
     rawData[layerIndex].push(message.value);
     if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
 });
@@ -52,16 +66,18 @@ var svg = d3.select('body')
 svg.append("rect")
     .attr("width", "100%")
     .attr("height", "100%")
-    .attr("fill", "pink");
+    .attr("fill", "black");
 
 var xScale = d3.scale.linear()
     .domain([0, m - 1])
     .range([0, width]);
 
-var color = d3.scale.linear().range(["#aad", "#556"]); //grey`
-// var color = d3.scale.linear().range(["#e0f3db", "#43a2ca"]); // greenish
+// var color = d3.scale.linear().range(["#aad", "#556"]); //grey`
+var color = d3.scale.linear().range(["#e0f3db", "#43a2ca"]); // greenish
 // var color = d3.scale.linear().range(["#ffffe5", "#8c2d04"]); // earth
 // var color = d3.scale.linear().range(["#f7f4f9", "#91003f"]); // pink
+
+show();
 
 
 function normalize(vector) {
@@ -76,6 +92,11 @@ function normalize(vector) {
 }
 
 function show() {
+
+    if (rawData.length < n) {
+        setTimeout(show, 100);
+        return;
+    }
 
     var data = Array();
     d3.map(rawData, function (d, i) {
@@ -103,6 +124,7 @@ function show() {
     // svg.call(axis);
 
     var area = d3.svg.area()
+        .interpolate("basis")
         .x(function (d) { return xScale(d.x); })
         .y0(function (d) { return yScale(d.y0); })
         .y1(function (d) { return yScale(d.y0 + d.y); });
@@ -143,17 +165,20 @@ function transition() {
         .range([height, 0]);
 
     var area = d3.svg.area()
+        .interpolate("basis")
         .x(function (d) { return xScale(d.x); })
         .y0(function (d) { return yScale(d.y0); })
         .y1(function (d) { return yScale(d.y0 + d.y); });
 
     d3.selectAll("path")
         .data(layers)
+        .interrupt()
         .transition()
-        // .delay(function(d, i) { return i / m * 2500; })
+        .ease("linear")
         .duration(1250)
-        .attr("d", area);
+        .attr("d", area)
+        ;
 
-    setTimeout(transition, 1500);
+    setTimeout(transition, 1250);
 
 }
