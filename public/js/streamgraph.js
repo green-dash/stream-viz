@@ -29,34 +29,6 @@ function storeNewData(layerIndex, message) {
     rawData[layerIndex] = message.values.slice(0, m);
 }
 
-/*
-socket.on('FIC_0805_OUT_x_H2O', function(message) {
-    storeNewData(0, message);
-});
-socket.on('FIC_0806_OUT_x_H2O', function(message) {
-    storeNewData(1, message);
-});
-socket.on('FIC_6924_OUT_Train 4_RM', function(message) {
-    storeNewData(2, message);
-});
-socket.on('FIC_6913_OUT_Train 4_RM', function(message) {
-    storeNewData(3, message);
-});
-socket.on('AIC_9680_OUT_Train 1_ED', function(message) {
-    storeNewData(4, message);
-});
-socket.on('FIC_0899_OUT_x_H2O', function(message) {
-    storeNewData(5, message);
-});
-socket.on('FIC_6910_OUT_Train 4_RM', function(message) {
-    storeNewData(6, message);
-});
-socket.on('FIC_6913_OUT_Train 4_RM', function(message) {
-    storeNewData(7, message);
-});
-*/
-
-
 var width = 960, height = 500;
 var svg = d3.select('body')
     .append('svg')
@@ -139,7 +111,7 @@ function transition() {
     var data = Array();
     d3.map(rawData, function (d, i) {
         data[i] = d.map(function (i, j) {
-            return { x: j, y: i };
+            return { x: j, y: i.value };
         });
     });
 
@@ -168,7 +140,7 @@ function transition() {
         .interrupt()
         .transition()
         // .ease("linear")
-        .ease("cubic in-out")
+        .ease("cubic-in-out")
         .duration(1500)
         .attr("d", area)
         ;

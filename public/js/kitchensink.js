@@ -39,20 +39,19 @@ var graph = new Rickshaw.Graph( {
 
 graph.render();
 
+var rawData = [];
 socket.on("stream-graph-topic", function(message) {
     var sensor = message.tag;
     var layerIndex = sensors.indexOf(sensor);
-    message.values.slice(0, m).forEach(function(v, i){
-        seriesData[layerIndex][i] = {x: i, y: v};
-    });
+    rawData[layerIndex] = message.values.slice(0, m);
 });
 
 var hoverDetail = new Rickshaw.Graph.HoverDetail( {
 	graph: graph,
 	xFormatter: function(x) {
-		return new Date(x * 1000).toString();
+		return new Date(x).toString();
 	}
-} );
+});
 
 var annotator = new Rickshaw.Graph.Annotate( {
 	graph: graph,
@@ -109,6 +108,19 @@ var controls = new RenderControls( {
 } );
 
 setInterval( function() {
+    // sync timestamps on x axis
+    var layer = rawData[0];
+    var first = layer[0].timestamp;
+    var length = layer.length;
+    var last = layer[length - 1].timestamp;
+    var delta = Math.round((last - first) / length);
+
+    rawData.forEach(function(layer, i){
+        layer.forEach(function(tv, j) {
+            seriesData[i][j] = { x: first + j * delta, y: tv.value };
+        });
+    });
+
 	graph.update();
 }, 1000 );
 
@@ -116,8 +128,9 @@ function preViewX() {
     if (seriesData[0].length > 0) {
         var preview = new Rickshaw.Graph.RangeSlider( {
             graph: graph,
-            element: document.getElementById('preview'),
+            element: document.getElementById('preview')
         } );
+        console.log(preview);
     }
     else {
         setTimeout(preViewX, 100);
