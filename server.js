@@ -19,21 +19,15 @@ var kafka = require('kafka-node'),
     HighLevelConsumer = kafka.HighLevelConsumer,
     client = new kafka.Client(),
     consumer = new HighLevelConsumer( client, [
-            { topic: "FIC_0805_OUT_x_H2O"  },
-            { topic: "FIC_0806_OUT_x_H2O"  },
-            { topic: "FIC_6924_OUT_Train-4_RM"  },
-            { topic: "FIC_6913_OUT_Train-4_RM"  },
-            { topic: "AIC_9680_OUT_Train-1_ED"  },
-            { topic: "FIC_0899_OUT_x_H2O"  },
-            { topic: "FIC_6910_OUT_Train-4_RM"},
-            { topic: "FIC_6913_OUT_Train-4_RM"}
+            { topic: "stream-graph-topic"}
         ]
     );
 
 var webServerPort = configuration["http.port"] || 3010;
 
 consumer.on('message', function (message) {
-    app.io.sockets.emit(message.topic, JSON.parse(message.value));
+    var payload = JSON.parse(message.value);
+    app.io.sockets.emit("stream-graph-topic", payload);
 });
 
 /* start web server */

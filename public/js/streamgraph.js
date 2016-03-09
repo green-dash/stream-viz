@@ -1,57 +1,60 @@
 var socket = io.connect();
 
-var n = 8;
-
-var rawData = [];
-for (i=0; i < n; i++) {
-    rawData[i] = [];
-}
+var n = 7;
 
 var m = 100;
 
+var sensors = [
+    "FIC_0805_OUT_x_H2O",
+    "FIC_0806_OUT_x_H2O",
+    "FIC_6924_OUT_Train 4_RM",
+    "FIC_6913_OUT_Train 4_RM",
+    "AIC_9680_OUT_Train 1_ED",
+    "FIC_0899_OUT_x_H2O",
+    "FIC_6910_OUT_Train 4_RM"
+];
+
+var rawData = [];
+sensors.forEach(function(sensor, i) {
+    rawData.push([]);
+});
+
+socket.on("stream-graph-topic", function(message) {
+    var sensor = message.tag;
+    var layerIndex = sensors.indexOf(sensor);
+    storeNewData(layerIndex, message);
+});
+
+function storeNewData(layerIndex, message) {
+    rawData[layerIndex] = message.values.slice(0, m);
+}
+
+/*
 socket.on('FIC_0805_OUT_x_H2O', function(message) {
-    var layerIndex = 0;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+    storeNewData(0, message);
 });
-
 socket.on('FIC_0806_OUT_x_H2O', function(message) {
-    var layerIndex = 1;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+    storeNewData(1, message);
 });
-
-socket.on('FIC_6924_OUT_Train-4_RM', function(message) {
-    var layerIndex = 2;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+socket.on('FIC_6924_OUT_Train 4_RM', function(message) {
+    storeNewData(2, message);
 });
-
-socket.on('FIC_6913_OUT_Train-4_RM', function(message) {
-    var layerIndex = 3;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+socket.on('FIC_6913_OUT_Train 4_RM', function(message) {
+    storeNewData(3, message);
 });
-socket.on('AIC_9680_OUT_Train-1_ED', function(message) {
-    var layerIndex = 4;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+socket.on('AIC_9680_OUT_Train 1_ED', function(message) {
+    storeNewData(4, message);
 });
 socket.on('FIC_0899_OUT_x_H2O', function(message) {
-    var layerIndex = 5;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+    storeNewData(5, message);
 });
-socket.on('FIC_6910_OUT_Train-4_RM', function(message) {
-    var layerIndex = 6;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+socket.on('FIC_6910_OUT_Train 4_RM', function(message) {
+    storeNewData(6, message);
 });
-socket.on('FIC_6913_OUT_Train-4_RM', function(message) {
-    var layerIndex = 7;
-    rawData[layerIndex].push(message.value);
-    if (rawData[layerIndex].length > m) rawData[layerIndex].shift();
+socket.on('FIC_6913_OUT_Train 4_RM', function(message) {
+    storeNewData(7, message);
 });
+*/
 
 
 var width = 960, height = 500;
@@ -79,17 +82,8 @@ var color = d3.scale.linear().range(["#e0f3db", "#43a2ca"]); // greenish
 
 show();
 
-
-function normalize(vector) {
-    var v = vector.slice();
-    var max = Math.max.apply(Math, v);
-    var min = Math.min.apply(Math, v);
-    var d = max - min;
-    for (i = 0; i < v.length; i++) {
-        v[i] = (v[i] - min) / d;
-    }
-    return (v);
-}
+var area;
+var yscale;
 
 function show() {
 
@@ -100,7 +94,7 @@ function show() {
 
     var data = Array();
     d3.map(rawData, function (d, i) {
-        data[i] = normalize(d).map(function (i, j) {
+        data[i] = d.map(function (i, j) {
             return { x: j, y: i };
         });
     });
@@ -108,9 +102,7 @@ function show() {
     var layers = d3.layout.stack()
         .offset('wiggle')(data);
 
-    console.log(layers);
-
-    var yScale = d3.scale.linear()
+    yScale = d3.scale.linear()
         .domain([
             0, d3.max(layers, function (layer) {
                 return d3.max(layer, function (d) {
@@ -123,7 +115,7 @@ function show() {
     // var axis = d3.svg.axis().orient("left").scale(yScale);
     // svg.call(axis);
 
-    var area = d3.svg.area()
+    area = d3.svg.area()
         .interpolate("basis")
         .x(function (d) { return xScale(d.x); })
         .y0(function (d) { return yScale(d.y0); })
@@ -146,7 +138,7 @@ function transition() {
 
     var data = Array();
     d3.map(rawData, function (d, i) {
-        data[i] = normalize(d).map(function (i, j) {
+        data[i] = d.map(function (i, j) {
             return { x: j, y: i };
         });
     });
@@ -164,6 +156,7 @@ function transition() {
         ])
         .range([height, 0]);
 
+
     var area = d3.svg.area()
         .interpolate("basis")
         .x(function (d) { return xScale(d.x); })
@@ -174,11 +167,12 @@ function transition() {
         .data(layers)
         .interrupt()
         .transition()
-        .ease("linear")
-        .duration(1250)
+        // .ease("linear")
+        .ease("cubic in-out")
+        .duration(1500)
         .attr("d", area)
         ;
 
-    setTimeout(transition, 1250);
+    setTimeout(transition, 1000);
 
 }
