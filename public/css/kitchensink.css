@@ -1,0 +1,76 @@
+html, body {
+	height: 100%;
+	margin: 0;
+	background: black;
+	color: #FCEFA1;
+    font-size: 12px;
+}
+
+#timebox {
+    position: absolute;
+    top: 100px;
+    padding: 0 20px 20px 0;
+    width: 200px;
+    display: inline-block;
+    vertical-align: top;
+    right: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+#streamSet {
+	color: #FCEFA1;
+    border: none;
+}
+
+#content {
+    margin-top: 10px;
+}
+
+#chart {
+    background: linear-gradient(#373B44, #73C8A9);
+    border: 1px solid #555555;
+}
+
+.rickshaw_graph .detail {
+	color: black;
+}
+
+#legend {
+	background-color: black;
+}
+
+#legend .label {
+	color: #FCEFA1;
+}
+
+#legend .action {
+	color: #FCEFA1;
+}
+
+#renderer_form.toggler label {
+    color: #AD9B31;
+}
+
+#side_panel section {
+	background-color: black;
+    color: #AD9B31;
+}
+
+section {
+    border-top: 1px solid #555555;
+}
+
+.rickshaw_annotation_timeline {
+    border-top: 1px solid #555555;
+}
+
+#preview {
+    height: 3px;
+}
+
+#preview a {
+    height: 9px;
+}
+
+

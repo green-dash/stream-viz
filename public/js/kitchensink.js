@@ -2,18 +2,18 @@
 var socket = io.connect();
 var m = 100;
 
-var palette = new Rickshaw.Color.Palette( { scheme: 'classic9' } );
+// var palette = new Rickshaw.Color.Palette( { scheme: 'classic9' } );
 
-// var palette = ['#fff7fb','#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#034e7b'].reverse();
+var palette = ['#fff7fb','#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#034e7b'].reverse();
 
 var sensors = [
     "FIC_0805_OUT_x_H2O",
     "FIC_0806_OUT_x_H2O",
-    "FIC_6924_OUT_Train 4_RM",
-    "FIC_6913_OUT_Train 4_RM",
-    "AIC_9680_OUT_Train 1_ED",
     "FIC_0899_OUT_x_H2O",
-    "FIC_6910_OUT_Train 4_RM"
+    "FIC_6913_OUT_Train 4_RM",
+    "FIC_6924_OUT_Train 4_RM",
+    "FIC_6910_OUT_Train 4_RM",
+    "AIC_9680_OUT_Train 1_ED"
 ];
 
 var seriesData = [ ];
@@ -21,7 +21,8 @@ var series = [];
 sensors.forEach(function(sensor, i) {
     seriesData.push([]);
     series.push({
-        color: palette.color(),
+        // color: palette.color(),
+        color: palette[i],
         data: seriesData[i],
         name: sensor
     });
@@ -39,12 +40,35 @@ var graph = new Rickshaw.Graph( {
 
 graph.render();
 
+var selectedTopic = "normalized-by-tag-topic"
+
+document.getElementById("inputStream").addEventListener("change", function(event){
+    rawData = [];
+    var e = event.srcElement;
+    var v = e.options[e.selectedIndex].value;
+    if (v == "Real Values"){
+        selectedTopic = "grouped-by-tag-topic";
+    }
+    if (v == "Normalized Values"){
+        selectedTopic = "normalized-by-tag-topic";
+    }
+    socket.emit("selectedTopic", selectedTopic);
+});
+
 var rawData = [];
-socket.on("stream-graph-topic", function(message) {
+socket.on("grouped-by-tag-topic", function(message) {
+    storeMessage("grouped-by-tag-topic", message);
+});
+
+socket.on("normalized-by-tag-topic", function(message) {
+    storeMessage("normalized-by-tag-topic", message);
+});
+
+function storeMessage(requestedTopic, message) {
     var sensor = message.tag;
     var layerIndex = sensors.indexOf(sensor);
     rawData[layerIndex] = message.values.slice(0, m);
-});
+}
 
 var hoverDetail = new Rickshaw.Graph.HoverDetail( {
 	graph: graph,
@@ -86,10 +110,10 @@ var smoother = new Rickshaw.Graph.Smoother( {
 
 var ticksTreatment = 'glow';
 
-var xAxis = new Rickshaw.Graph.Axis.Time( {
+var xAxis = new Rickshaw.Graph.Axis.X( {
 	graph: graph,
 	ticksTreatment: ticksTreatment,
-	timeFixture: new Rickshaw.Fixtures.Time.Local()
+	tickFormat: function(d) { return new Date(d).toString().match(/(\d+:\d+):/)[1]; }
 } );
 
 xAxis.render();
@@ -107,6 +131,7 @@ var controls = new RenderControls( {
 	graph: graph
 } );
 
+// setTimeout( function() { // for debugging
 setInterval( function() {
     // sync timestamps on x axis
     var layer = rawData[0];
@@ -121,29 +146,23 @@ setInterval( function() {
         });
     });
 
+	document.getElementById("timebox").innerHTML = new Date(last).toString();
 	graph.update();
+
 }, 1000 );
 
-function preViewX() {
+function previewRangeSlider() {
     if (seriesData[0].length > 0) {
         var preview = new Rickshaw.Graph.RangeSlider( {
             graph: graph,
             element: document.getElementById('preview')
         } );
-        console.log(preview);
     }
     else {
-        setTimeout(preViewX, 100);
+        setTimeout(previewRangeSlider, 100);
     }
 }
 
-preViewX();
+previewRangeSlider();
 
-var previewXAxis = new Rickshaw.Graph.Axis.Time({
-    // graph: preview.previews[0],
-    graph: graph,
-    timeFixture: new Rickshaw.Fixtures.Time.Local(),
-    ticksTreatment: ticksTreatment
-});
-previewXAxis.render();
 
