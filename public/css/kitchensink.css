@@ -65,6 +65,7 @@ section {
     border-top: 1px solid #555555;
 }
 
+/*
 #preview {
     height: 3px;
 }
@@ -72,5 +73,18 @@ section {
 #preview a {
     height: 9px;
 }
+*/
 
+#speedFactor {
+    margin: 5px 0 0 10px;
+    width: 90%;
+}
+
+#speedValue {
+    border:0;
+    width: 3em;
+    font-weight:bold;
+    background: black;
+	color: #FCEFA1;
+}
 

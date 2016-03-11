@@ -1,4 +1,4 @@
 {
   "http.port": 3010,
-  "data.topic": "FIC_0805_OUT_x_H2O"
+  "data.player.rest.url": "http://localhost:3081"
 }

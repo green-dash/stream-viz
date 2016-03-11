@@ -8,11 +8,17 @@
     <link type="text/css" rel="stylesheet" href="css/kitchensink.css">
 
     <script src="//d3js.org/d3.v3.min.js"></script>
+    <!--
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
     <script>
 		jQuery.noConflict();
 	</script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
+    -->
+
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
     <script src="js/rickshaw/rickshaw.js"></script>
     <script src="js/rickshaw/extensions.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -33,6 +39,12 @@
                     <option>Real Values</option>
                 </select>
             </fieldset>
+        </section>
+
+        <section>
+            <label for="speedFactor">Speed control</label>
+            <input type="text" readonly name="speedValue" id="speedValue">
+            <div id="speedFactor"></div>
         </section>
 
         <section><div id="legend"></div></section>

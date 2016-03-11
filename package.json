@@ -13,6 +13,7 @@
     "kafka-node" : "latest",
     "fs" : "latest",
     "moment" : "latest",
-    "lodash": "latest"
+    "lodash": "latest",
+    "node-rest-client": "latest"
   }
 }

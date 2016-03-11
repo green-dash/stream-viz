@@ -1,6 +1,33 @@
 
 var socket = io.connect();
-var m = 100;
+
+
+var selectedTopic = "normalized-by-tag-topic"
+
+socket.on("speedFactor", function (data){
+    $( "#speedValue" ).val( data );
+    $( "#speedFactor" ).slider( "value", data );
+});
+
+$(function() {
+
+    $( "#speedFactor" ).slider({
+        range: "max",
+        min: 1,
+        max: 100,
+        value: $( "#speedValue" ).val(),
+        slide: function( event, ui ) {
+            $( "#speedValue" ).val( ui.value );
+        },
+        stop: function( event, ui ) {
+            socket.emit("setSpeedFactor", $( "#speedValue" ).val());
+        }
+    });
+    $( "#speedValue" ).val( $( "#speedFactor" ).slider( "value" ) );
+});
+
+
+var m = 1000;
 
 // var palette = new Rickshaw.Color.Palette( { scheme: 'classic9' } );
 
@@ -40,8 +67,6 @@ var graph = new Rickshaw.Graph( {
 
 graph.render();
 
-var selectedTopic = "normalized-by-tag-topic"
-
 document.getElementById("inputStream").addEventListener("change", function(event){
     rawData = [];
     var e = event.srcElement;
@@ -67,7 +92,8 @@ socket.on("normalized-by-tag-topic", function(message) {
 function storeMessage(requestedTopic, message) {
     var sensor = message.tag;
     var layerIndex = sensors.indexOf(sensor);
-    rawData[layerIndex] = message.values.slice(0, m);
+    // rawData[layerIndex] = message.values.slice(0, m);
+    rawData[layerIndex] = message.values;
 }
 
 var hoverDetail = new Rickshaw.Graph.HoverDetail( {
@@ -133,6 +159,18 @@ var controls = new RenderControls( {
 
 // setTimeout( function() { // for debugging
 setInterval( function() {
+
+    // number of elements per layer
+    var l = 5000; // max number of elements per layer
+    rawData.forEach(function(row){
+        if (row.length < l) l = row.length;
+    });
+    console.log(l);
+
+    rawData.forEach(function(row, i){
+        rawData[i] = row.slice(0, l);
+    });
+
     // sync timestamps on x axis
     var layer = rawData[0];
     var first = layer[0].timestamp;
