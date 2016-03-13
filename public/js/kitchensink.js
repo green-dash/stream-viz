@@ -4,7 +4,12 @@ var socket = io.connect();
 
 var selectedTopic = "normalized-by-tag-topic"
 
+var m = 0;
+
+var speedFactor = 1;
+
 socket.on("speedFactor", function (data){
+    speedFactor = data;
     $( "#speedValue" ).val( data );
     $( "#speedFactor" ).slider( "value", data );
 });
@@ -27,7 +32,6 @@ $(function() {
 });
 
 
-var m = 1000;
 
 // var palette = new Rickshaw.Color.Palette( { scheme: 'classic9' } );
 
@@ -161,11 +165,12 @@ var controls = new RenderControls( {
 setInterval( function() {
 
     // number of elements per layer
-    var l = 5000; // max number of elements per layer
+    var l = speedFactor * 10;
     rawData.forEach(function(row){
         if (row.length < l) l = row.length;
     });
     console.log(l);
+
 
     rawData.forEach(function(row, i){
         rawData[i] = row.slice(0, l);
