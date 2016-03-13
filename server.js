@@ -32,10 +32,14 @@ setInterval( function() {
 
 /* speed factor REST handling: set data */
 app.io.route('setSpeedFactor', function(req) {
-    var args = {
-    	data: req.data
-    };
+    var args = { data: req.data };
     restClient.post(dataPlayerRestUrl + "/speed", args, function (data, response) { })
+});
+
+app.io.route('sensorList', function(req) {
+    restClient.get(dataPlayerRestUrl + "/sensorList", function (data, response) {
+        app.io.sockets.emit('sensorList', JSON.parse(data));
+    });
 });
 
 var kafka = require('kafka-node'),
@@ -52,14 +56,15 @@ kafkaConsumer.on('message', function (message) {
     app.io.sockets.emit(message.topic, payload);
 });
 
+/* work around bug in kafka consumer client */
+process.on('SIGINT', function() {
+    kafkaConsumer.close(true, function(){ process.exit(); })
+});
+
 /* start web server */
 var webServerPort = configuration["http.port"] || 3010;
 app.listen(webServerPort, function(){
     console.log('web server listening at 0.0.0.0:%s', webServerPort);
 });
 
-/* work around bug in kafka consumer client */
-process.on('SIGINT', function() {
-    kafkaConsumer.close(true, function(){ process.exit(); })
-});
 
