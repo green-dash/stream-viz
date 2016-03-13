@@ -81,7 +81,6 @@ document.getElementById("inputStream").addEventListener("change", function(event
     if (v == "Normalized Values"){
         selectedTopic = "normalized-by-tag-topic";
     }
-    socket.emit("selectedTopic", selectedTopic);
 });
 
 var rawData = [];
@@ -94,10 +93,11 @@ socket.on("normalized-by-tag-topic", function(message) {
 });
 
 function storeMessage(requestedTopic, message) {
-    var sensor = message.tag;
-    var layerIndex = sensors.indexOf(sensor);
-    // rawData[layerIndex] = message.values.slice(0, m);
-    rawData[layerIndex] = message.values;
+    if (requestedTopic == selectedTopic) {
+        var sensor = message.tag;
+        var layerIndex = sensors.indexOf(sensor);
+        rawData[layerIndex] = message.values;
+    }
 }
 
 var hoverDetail = new Rickshaw.Graph.HoverDetail( {
@@ -169,8 +169,6 @@ setInterval( function() {
     rawData.forEach(function(row){
         if (row.length < l) l = row.length;
     });
-    console.log(l);
-
 
     rawData.forEach(function(row, i){
         rawData[i] = row.slice(0, l);
