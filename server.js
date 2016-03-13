@@ -18,9 +18,11 @@ var app = express();
 app.http().io();
 app.use(express.static(__dirname + '/public'));
 
+var dataPlayerRestUrl = configuration["data.player.rest.url"]
+
 /* speed factor REST handling: get data */
 function getSpeedFactor() {
-    restClient.get(configuration["data.player.rest.url"] + "/speed", function (data, response) {
+    restClient.get(dataPlayerRestUrl + "/speed", function (data, response) {
         app.io.sockets.emit('speedFactor', parseInt(data.toString()));
     })
 }
@@ -33,7 +35,7 @@ app.io.route('setSpeedFactor', function(req) {
     var args = {
     	data: req.data
     };
-    restClient.post(configuration["data.player.rest.url"] + "/speed", args, function (data, response) { })
+    restClient.post(dataPlayerRestUrl + "/speed", args, function (data, response) { })
 });
 
 var kafka = require('kafka-node'),
