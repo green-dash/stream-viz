@@ -31,10 +31,15 @@ $(function() {
 });
 
 
+var colorScheme = ['#fff7fb','#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#034e7b'].reverse();
 
-// var palette = new Rickshaw.Color.Palette( { scheme: 'classic9' } );
-
-var palette = ['#fff7fb','#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#034e7b'].reverse();
+var Palette = function() {
+    var i = 0;
+    this.color = function () {
+        return colorScheme[i++ % colorScheme.length];
+    }
+}
+var palette = new Palette();
 
 var sensors = [];
 var seriesData = [];
@@ -43,8 +48,6 @@ var series = [];
 /* start doing the real work when we have info from the server */
 socket.emit("sensorList");
 socket.on("sensorList", function (sensorList){
-    console.log(sensorList);
-
     sensorList.forEach(function (sensorInfo) {
         sensors.push(sensorInfo.tagName)
     });
@@ -56,8 +59,7 @@ function doWork() {
     sensors.forEach(function(sensor, i) {
         seriesData.push([]);
         series.push({
-            // color: palette.color(),
-            color: palette[i],
+            color: palette.color(),
             data: seriesData[i],
             name: sensor
         });
