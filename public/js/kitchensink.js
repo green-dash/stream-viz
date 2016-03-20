@@ -97,16 +97,18 @@ function doWork() {
 
     document.getElementById("inputStream").addEventListener("change", function(event){
         rawData = [];
-        var e = event.srcElement;
-        var v = e.options[e.selectedIndex].value;
-        if (v == "Raw Values"){
-            selectedTopic = "grouped-by-tag-topic";
-            graph.configure({min: 0})
+        var i = event.srcElement.selectedIndex;
+        switch(i) {
+            case 0:
+                selectedTopic = "grouped-by-tag-topic";
+                graph.configure({min: 0});
+                break;
+            case 1:
+                selectedTopic = "standardized-by-tag-topic";
+                graph.configure({min: -4});
+                break;
         }
-        if (v == "Normalized Raw Values"){
-            selectedTopic = "normalized-by-tag-topic";
-            graph.configure({min: -4, max: 4})
-        }
+
     });
 
     var rawData = [];
@@ -114,28 +116,19 @@ function doWork() {
         storeMessage("grouped-by-tag-topic", message);
     });
 
-    socket.on("normalized-by-tag-topic", function(message) {
-        storeMessage("normalized-by-tag-topic", message);
+    socket.on("standardized-by-tag-topic", function(message) {
+        storeMessage("standardized-by-tag-topic", message);
     });
 
-    socket.on("summary-stats-topic", function(message) {
+    socket.on("deviation-topic", function(message) {
         checkDeviations(message);
     });
 
-    function checkDeviations(statsMessage){
-        statsMessage.forEach(function(stat){
-            var sensor = stat.tag;
-            var stats = stat.stats;
+    function checkDeviations(deviationMessage){
+        deviationMessage.forEach(function(deviation){
+            var sensor = deviation.tag;
             var layerIndex = sensors.indexOf(sensor);
-            var data = rawData[layerIndex];
-            if ( ! data) return;
-            var numDeviations = 0;
-            var dev = (selectedTopic == "normalized-by-tag-topic" ? deviationLevel : stats.mean + deviationLevel * stats.stdev);
-            data.forEach(function(v){
-                if (v.value > dev) {
-                    numDeviations++;
-                }
-            });
+            var numDeviations = deviation.deviations[deviationLevel];
             gaugeData.setValue(layerIndex, 1, numDeviations);
         });
         gaugeChart.draw(gaugeData, gaugeOptions);
@@ -221,6 +214,9 @@ function doWork() {
 
         // sync timestamps on x axis: fat kludge
         var layer = rawData[0];
+
+        if(! (layer && layer[0])) return;
+
         var first = layer[0].timestamp;
         var last = layer[l - 1].timestamp;
         var delta = Math.round((last - first) / l);

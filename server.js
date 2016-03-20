@@ -46,9 +46,9 @@ var kafka = require('kafka-node'),
     HighLevelConsumer = kafka.HighLevelConsumer,
     kafkaClient = new kafka.Client(),
     kafkaConsumer = new HighLevelConsumer( kafkaClient, [
-            { topic: "normalized-by-tag-topic"},
+            { topic: "standardized-by-tag-topic"},
             { topic: "grouped-by-tag-topic"},
-            { topic: "summary-stats-topic"}
+            { topic: "deviation-topic"}
         ]
     );
 
