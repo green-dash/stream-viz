@@ -18,13 +18,18 @@ html, body {
     font-size: 12px;
 }
 
+#deviationContainer {
+    font-size: 8px;
+    text-align: center;
+}
+
 #streamSet {
 	color: #FCEFA1;
     border: none;
 }
 
 #content {
-    margin-top: 10px;
+    margin-top: 30px;
 }
 
 #chart {

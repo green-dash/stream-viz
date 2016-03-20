@@ -5,23 +5,22 @@
     <link type="text/css" rel="stylesheet" href="css/rickshaw/detail.css">
     <link type="text/css" rel="stylesheet" href="css/rickshaw/legend.css">
     <link type="text/css" rel="stylesheet" href="css/rickshaw/extensions.css?v=2">
+
+    <link type="text/css" rel="stylesheet" href="css/jstree/themes/default/style.min.css" />
     <link type="text/css" rel="stylesheet" href="css/kitchensink.css">
 
     <script src="//d3js.org/d3.v3.min.js"></script>
-    <!--
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-    <script>
-		jQuery.noConflict();
-	</script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
-    -->
-
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="//www.gstatic.com/charts/loader.js"></script>
 
     <script src="js/rickshaw/rickshaw.js"></script>
     <script src="js/rickshaw/extensions.js"></script>
+
     <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+    </script>
 
 </head>
 <body>
@@ -35,8 +34,8 @@
             <fieldset id ="streamSet">
                 <label for="inputStream">Select input type</label>
                 <select name="inputStream" id="inputStream">
-                    <option selected="selected">Normalized Values</option>
-                    <option>Real Values</option>
+                    <option>Normalized Raw Values</option>
+                    <option selected>Raw Values</option>
                 </select>
             </fieldset>
         </section>
@@ -98,17 +97,26 @@
             <h6>Smoothing</h6>
             <div id="smoother"></div>
         </section>
-        <section></section>
+        <section>
+            <h6>Deviation Alerts</h6>
+            <div id="radio">
+                <div><label for="mu">  <input type="radio" name="deviationRadio" class="deviationRadio" value="0"></label><span id="mu">μ</span></div>
+                <div><label for="mu1s"><input type="radio" name="deviationRadio" class="deviationRadio" value="1" checked="checked" ></label><span id="mu1s">μ+1σ</span></div>
+                <div><label for="mu2s"><input type="radio" name="deviationRadio" class="deviationRadio" value="2"></label><span id="mu2s">μ+2σ</span></div>
+            </div>
+        </section>
     </form>
 
     <div id="chart_container">
         <div id="chart"></div>
         <div id="timeline"></div>
         <div id="preview"></div>
+        <div id="deviationContainer"></div>
     </div>
 
     <div id="timebox"></div>
 
 </div>
+
 <script src="js/kitchensink.js"></script>
 </body>
