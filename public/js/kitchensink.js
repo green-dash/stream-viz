@@ -144,14 +144,14 @@ function doWork() {
         // use timeseries from 1st sensor, so we don't mess up the ui
         var ts = sensorMessages[0].values
 
-        console.log(sensorMessages)
-
         sensorMessages.forEach(function(sensorMessage){
             var sensor = sensorMessage.tag;
             var sensorIndex = sensors.indexOf(sensor);
             graph.series[sensorIndex].data = sensorMessage.values.map(function(tv, i){ return {x: ts[i].timestamp, y: tv.value} });
         });
         graph.update();
+
+        $("#timebox").html(new Date(ts[ts.length - 1].timestamp).toString());
     }
 
     var hoverDetail = new Rickshaw.Graph.HoverDetail( {
