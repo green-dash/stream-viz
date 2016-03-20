@@ -5,6 +5,8 @@ var configuration = JSON.parse(
     fs.readFileSync("conf/application.json")
 );
 
+var selectedTopic = "grouped-by-tag-topic"
+
 var RestClient = require('node-rest-client').Client;
 var restClient = new RestClient();
 
@@ -42,11 +44,17 @@ app.io.route('sensorList', function(req) {
     });
 });
 
+app.io.route('selectedTopic', function(req) {
+    selectedTopic = req.data;
+    console.log("selected topic: " + selectedTopic);
+});
+
 var kafka = require('kafka-node'),
     HighLevelConsumer = kafka.HighLevelConsumer,
     kafkaClient = new kafka.Client(),
     kafkaConsumer = new HighLevelConsumer( kafkaClient, [
             { topic: "standardized-by-tag-topic"},
+            { topic: "normalized-by-tag-topic"},
             { topic: "grouped-by-tag-topic"},
             { topic: "deviation-topic"}
         ]
@@ -54,7 +62,9 @@ var kafka = require('kafka-node'),
 
 kafkaConsumer.on('message', function (message) {
     var payload = JSON.parse(message.value);
-    app.io.sockets.emit(message.topic, payload);
+    if (message.topic == "deviation-topic" || selectedTopic == message.topic) {
+        app.io.sockets.emit(message.topic, payload);
+    }
 });
 
 /* work around bug in kafka consumer client */

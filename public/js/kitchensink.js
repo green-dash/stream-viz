@@ -5,8 +5,6 @@ var m = 0;
 var speedFactor = 1;
 var deviationLevel = 1;
 var sensors = [];
-var seriesData = [];
-var series = [];
 var gaugeData;
 var gaugeOptions = {
     width: 900, height: 120,
@@ -72,12 +70,11 @@ socket.on("sensorList", function (sensorList){
 });
 
 function doWork() {
-
+    var series = [];
     sensors.forEach(function(sensor, i) {
-        seriesData.push([]);
         series.push({
             color: palette.color(),
-            data: seriesData[i],
+            data: [],
             name: sensor
         });
     });
@@ -107,17 +104,24 @@ function doWork() {
                 selectedTopic = "standardized-by-tag-topic";
                 graph.configure({min: -4});
                 break;
+            case 2:
+                selectedTopic = "normalized-by-tag-topic";
+                graph.configure({min: 0});
+                break;
         }
-
+        socket.emit("selectedTopic", selectedTopic);
     });
 
-    var rawData = [];
     socket.on("grouped-by-tag-topic", function(message) {
-        storeMessage("grouped-by-tag-topic", message);
+        updateGraph("grouped-by-tag-topic", message);
     });
 
     socket.on("standardized-by-tag-topic", function(message) {
-        storeMessage("standardized-by-tag-topic", message);
+        updateGraph("standardized-by-tag-topic", message);
+    });
+
+    socket.on("normalized-by-tag-topic", function(message) {
+        updateGraph("normalized-by-tag-topic", message);
     });
 
     socket.on("deviation-topic", function(message) {
@@ -134,12 +138,20 @@ function doWork() {
         gaugeChart.draw(gaugeData, gaugeOptions);
     }
 
-    function storeMessage(requestedTopic, message) {
-        if (requestedTopic == selectedTopic) {
-            var sensor = message.tag;
-            var layerIndex = sensors.indexOf(sensor);
-            rawData[layerIndex] = message.values;
-        }
+    function updateGraph(requestedTopic, sensorMessages){
+        if (requestedTopic != selectedTopic) return;
+
+        // use timeseries from 1st sensor, so we don't mess up the ui
+        var ts = sensorMessages[0].values
+
+        console.log(sensorMessages)
+
+        sensorMessages.forEach(function(sensorMessage){
+            var sensor = sensorMessage.tag;
+            var sensorIndex = sensors.indexOf(sensor);
+            graph.series[sensorIndex].data = sensorMessage.values.map(function(tv, i){ return {x: ts[i].timestamp, y: tv.value} });
+        });
+        graph.update();
     }
 
     var hoverDetail = new Rickshaw.Graph.HoverDetail( {
@@ -192,8 +204,6 @@ function doWork() {
 
     var yAxis = new Rickshaw.Graph.Axis.Y( {
         graph: graph,
-        // tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-        // tickFormat: function(y){return y.toPrecision(2)},
         ticksTreatment: ticksTreatment
     } );
 
@@ -204,48 +214,18 @@ function doWork() {
         graph: graph
     } );
 
-    setInterval( function() {
-
-        // number of elements per layer
-        var l = speedFactor * 10;
-        rawData.forEach(function(row){
-            if (row.length < l) l = row.length;
-        });
-
-        // sync timestamps on x axis: fat kludge
-        var layer = rawData[0];
-
-        if(! (layer && layer[0])) return;
-
-        var first = layer[0].timestamp;
-        var last = layer[l - 1].timestamp;
-        var delta = Math.round((last - first) / l);
-
-        rawData.forEach(function(layer, i){
-            for(j=0; j < l; j++) {
-                var tv = layer[j];
-                seriesData[i][j] = { x: first + j * delta, y: tv.value};
-            }
-        });
-
-        graph.update();
-
-        document.getElementById("timebox").innerHTML = new Date(last).toString();
-
-    }, 1000 );
-
     function previewRangeSlider() {
-        if (seriesData[0].length > 0) {
+        if (graph.series[0].data.length > 0) {
             var preview = new Rickshaw.Graph.RangeSlider( {
                 graph: graph,
                 element: document.getElementById('preview')
             } );
         }
         else {
+            // wait until graph has data
             setTimeout(previewRangeSlider, 100);
         }
     }
-
     previewRangeSlider();
 
 }
