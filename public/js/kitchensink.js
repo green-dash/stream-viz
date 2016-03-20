@@ -81,7 +81,7 @@ function doWork() {
 
     var graph = new Rickshaw.Graph( {
         element: document.getElementById("chart"),
-        min: 0,
+        min: -1,
         width: 900,
         height: 500,
         renderer: 'area',
@@ -98,7 +98,7 @@ function doWork() {
         switch(i) {
             case 0:
                 selectedTopic = "grouped-by-tag-topic";
-                graph.configure({min: 0});
+                graph.configure({min: -1 });
                 break;
             case 1:
                 selectedTopic = "standardized-by-tag-topic";
