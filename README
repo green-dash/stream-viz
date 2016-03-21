@@ -1,0 +1,33 @@
+Visualization for green-dash.
+=============================
+
+See https://www.youtube.com/watch?v=vJGdxnaq9_0 for a video.
+
+Installation
+------------
+Prerequisites:
+- node.js
+- npm
+
+- kafka with the following live topics: standardized-by-tag-topic, normalized-by-tag-topic, grouped-by-tag-topic, deviation-topic
+  These topics are populated by green-dash/stream-processor.
+- a running instance of green-dash/data-player
+
+Before running for the first time execute:
+    npm install
+
+Configuration
+-------------
+Some configuration settings can be made in the file
+    conf/application.json
+
+Running
+-------
+Execute:
+
+    node server.js
+
+And point your browser to
+    http://localhost:3010/kitchensink.html
+
+
